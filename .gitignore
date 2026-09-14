@@ -39,9 +39,6 @@ yarn-error.log*
 # generated page-image cache
 /.cache/
 
-# source PDFs (large, user-provided content — never committed)
-/public/*.pdf
-
 # typescript
 *.tsbuildinfo
 next-env.d.ts
