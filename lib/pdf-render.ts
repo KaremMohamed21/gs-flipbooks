@@ -1,11 +1,16 @@
 import "server-only";
 import { mkdir, readFile, rename, writeFile } from "fs/promises";
+import os from "os";
 import path from "path";
 import { createCanvas } from "@napi-rs/canvas";
-import type { PdfFileEntry } from "./pdf-library";
+import { versionKey, type PdfFileEntry } from "./pdf-library";
 import { getPdfDocument } from "./pdf-doc-cache";
 
-const CACHE_ROOT = path.join(process.cwd(), ".cache", "pdf-pages");
+// os.tmpdir() rather than a project-relative path: on Vercel (and other
+// serverless platforms) only /tmp is writable, the deployment directory
+// itself is read-only. This resolves to the OS temp dir locally too, so
+// the same code works unmodified in both environments.
+const CACHE_ROOT = path.join(os.tmpdir(), "gs-flipbooks-cache", "pdf-pages");
 const ALLOWED_WIDTHS = [150, 300, 600, 1000, 1600];
 
 export class PageOutOfRangeError extends Error {
@@ -37,18 +42,16 @@ interface RenderResult {
 const inFlight = new Map<string, Promise<RenderResult>>();
 
 function pageCachePath(entry: PdfFileEntry, pageNumber: number, width: number): string {
-  return path.join(
-    CACHE_ROOT,
-    entry.slug,
-    `${entry.mtimeMs}-${entry.size}`,
-    `p${pageNumber}-w${width}.webp`
-  );
+  return path.join(CACHE_ROOT, entry.slug, versionKey(entry), `p${pageNumber}-w${width}.webp`);
 }
 
 /**
  * Renders one PDF page to a WebP image, disk-cached forever (the cache key
- * bakes in the source file's mtime+size, so a given URL's bytes never
- * change once written).
+ * bakes in the source file's version, so a given URL's bytes never change
+ * once written). Note: on serverless platforms this cache lives in /tmp,
+ * which is ephemeral per instance — Vercel's own CDN cache (via the
+ * Cache-Control header on the API response) is what actually makes repeat
+ * requests fast in production, this is a same-instance bonus on top.
  */
 export async function renderPdfPage(
   entry: PdfFileEntry,

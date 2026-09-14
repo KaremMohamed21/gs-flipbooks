@@ -26,7 +26,7 @@ interface FlipBookHandle {
 
 interface FlipbookViewerProps {
   slug: string;
-  filename: string;
+  downloadHref: string;
   title: string;
   fileSize: number;
   pageCount: number;
@@ -42,7 +42,7 @@ const DEFAULT_ZOOM = 2;
 
 export function FlipbookViewer({
   slug,
-  filename,
+  downloadHref,
   title,
   fileSize,
   pageCount,
@@ -146,8 +146,7 @@ export function FlipbookViewer({
     [baseWidth, aspect]
   );
 
-  const downloadHref = `/${encodeURIComponent(filename)}`;
-  const downloadSizeLabel = `${(fileSize / (1024 * 1024)).toFixed(0)} MB`;
+  const downloadSizeLabel = fileSize > 0 ? `${(fileSize / (1024 * 1024)).toFixed(0)} MB` : "";
 
   return (
     <div

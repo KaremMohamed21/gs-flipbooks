@@ -1,10 +1,15 @@
 import "server-only";
 import { mkdir, readFile, writeFile } from "fs/promises";
+import os from "os";
 import path from "path";
-import type { PdfFileEntry } from "./pdf-library";
+import { versionKey, type PdfFileEntry } from "./pdf-library";
 import { getPdfDocument } from "./pdf-doc-cache";
 
-const CACHE_ROOT = path.join(process.cwd(), ".cache", "pdf-meta");
+// os.tmpdir() rather than a project-relative path: on Vercel (and other
+// serverless platforms) only /tmp is writable, the deployment directory
+// itself is read-only. This resolves to the OS temp dir locally too, so
+// the same code works unmodified in both environments.
+const CACHE_ROOT = path.join(os.tmpdir(), "gs-flipbooks-cache", "pdf-meta");
 
 export interface PdfMeta {
   numPages: number;
@@ -13,7 +18,7 @@ export interface PdfMeta {
 }
 
 function metaCachePath(entry: PdfFileEntry): string {
-  return path.join(CACHE_ROOT, entry.slug, `${entry.mtimeMs}-${entry.size}.json`);
+  return path.join(CACHE_ROOT, entry.slug, `${versionKey(entry)}.json`);
 }
 
 /**

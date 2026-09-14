@@ -1,6 +1,7 @@
 import "server-only";
 import { pathToFileURL } from "url";
 import { getDocument, type PDFDocumentProxy, type PDFDocumentLoadingTask } from "pdfjs-dist/legacy/build/pdf.mjs";
+import { versionKey, type PdfFileEntry } from "./pdf-library";
 
 const MAX_OPEN_DOCS = 2;
 
@@ -12,10 +13,6 @@ interface CacheEntry {
 }
 
 const cache = new Map<string, CacheEntry>();
-
-function docKey(slug: string, mtimeMs: number, size: number): string {
-  return `${slug}:${mtimeMs}:${size}`;
-}
 
 async function evictExcess(): Promise<void> {
   while (cache.size > MAX_OPEN_DOCS) {
@@ -44,26 +41,22 @@ async function evictExcess(): Promise<void> {
 }
 
 /**
- * Returns a cached, open pdfjs document for this file, opening it via a
- * file:// URL (range reads) rather than loading the whole file into memory.
- * Keeps at most MAX_OPEN_DOCS documents open at once (LRU eviction) since
- * these source PDFs are 100+ MB each.
+ * Returns a cached, open pdfjs document for this file. Local files open via
+ * a file:// URL (range reads against disk); remote files open via their
+ * https:// URL (range reads via HTTP, since GitHub's release CDN supports
+ * Accept-Ranges). Keeps at most MAX_OPEN_DOCS documents open at once (LRU
+ * eviction) since these source PDFs are large.
  */
-export async function getPdfDocument(entry: {
-  slug: string;
-  absolutePath: string;
-  mtimeMs: number;
-  size: number;
-}): Promise<PDFDocumentProxy> {
-  const key = docKey(entry.slug, entry.mtimeMs, entry.size);
+export async function getPdfDocument(entry: PdfFileEntry): Promise<PDFDocumentProxy> {
+  const key = `${entry.slug}:${versionKey(entry)}`;
   const cached = cache.get(key);
   if (cached) {
     cached.lastUsed = Date.now();
     return cached.docPromise;
   }
 
-  const fileUrl = pathToFileURL(entry.absolutePath).href;
-  const loadingTask = getDocument({ url: fileUrl });
+  const url = entry.source.kind === "local" ? pathToFileURL(entry.source.absolutePath).href : entry.source.url;
+  const loadingTask = getDocument({ url });
   const docPromise = loadingTask.promise;
 
   const cacheEntry: CacheEntry = { loadingTask, docPromise, lastUsed: Date.now(), ready: false };

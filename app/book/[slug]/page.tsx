@@ -14,11 +14,13 @@ export default async function BookPage({
   if (!entry) notFound();
 
   const meta = await getPdfMeta(entry);
+  const downloadHref =
+    entry.source.kind === "remote" ? entry.source.url : `/${encodeURIComponent(entry.filename)}`;
 
   return (
     <FlipbookViewer
       slug={entry.slug}
-      filename={entry.filename}
+      downloadHref={downloadHref}
       title={entry.title}
       fileSize={entry.size}
       pageCount={meta.numPages}

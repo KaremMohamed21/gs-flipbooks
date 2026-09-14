@@ -135,7 +135,9 @@ export function Toolbar({
           <a
             href={downloadHref}
             download
-            title={`Download original PDF (${downloadSizeLabel})`}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={downloadSizeLabel ? `Download original PDF (${downloadSizeLabel})` : "Download original PDF"}
             aria-label="Download PDF"
             className="rounded-full p-2 hover:bg-white/10"
           >
