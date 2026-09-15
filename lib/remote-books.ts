@@ -31,4 +31,19 @@ export const REMOTE_BOOKS: RemoteBookConfig[] = [
     filename: "Life Skills Booklet 3.pdf",
     url: "https://github.com/KaremMohamed21/gs-flipbooks/releases/download/pdfs/Life.Skills.Booklet.3.pdf",
   },
+  {
+    title: "Life Skills Booklet 4",
+    filename: "Life Skills Booklet 4.pdf",
+    url: "https://github.com/KaremMohamed21/gs-flipbooks/releases/download/pdfss/Life.Skills.Booklet.4.pdf",
+  },
+  {
+    title: "Life Skills Booklet 5",
+    filename: "Life Skills Booklet 5.pdf",
+    url: "https://github.com/KaremMohamed21/gs-flipbooks/releases/download/pdfss/Life.Skills.Booklet.5.pdf",
+  },
+  {
+    title: "Life Skills Booklet 6",
+    filename: "Life Skills Booklet 6.pdf",
+    url: "https://github.com/KaremMohamed21/gs-flipbooks/releases/download/pdfss/Life.Skills.Booklet.6.pdf",
+  },
 ];

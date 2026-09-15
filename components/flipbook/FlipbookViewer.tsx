@@ -164,10 +164,7 @@ export function FlipbookViewer({
         <span className="truncate text-sm text-neutral-300 sm:hidden">{title}</span>
       </div>
 
-      <div
-        className="flex flex-1 items-center justify-center p-6"
-        style={{ overflow: zoom > MIN_ZOOM ? "auto" : "hidden" }}
-      >
+      <div className="flex flex-1 items-center justify-center overflow-hidden p-6">
         <div
           style={{
             transform: `scale(${zoom}) translateX(${
